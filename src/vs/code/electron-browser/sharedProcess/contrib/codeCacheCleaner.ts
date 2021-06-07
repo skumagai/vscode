@@ -6,7 +6,7 @@
 import { basename, dirname, join } from 'vs/base/common/path';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { Promises, readdir, rimraf } from 'vs/base/node/pfs';
+import { Promises, rimraf } from 'vs/base/node/pfs';
 import { IProductService } from 'vs/platform/product/common/productService';
 import { RunOnceScheduler } from 'vs/base/common/async';
 import { ILogService } from 'vs/platform/log/common/log';
@@ -46,7 +46,7 @@ export class CodeCacheCleaner extends Disposable {
 			const codeCacheRootPath = dirname(currentCodeCachePath);
 			const currentCodeCacheEntry = basename(currentCodeCachePath);
 
-			const codeCaches = await readdir(codeCacheRootPath);
+			const codeCaches = await Promises.readdir(codeCacheRootPath);
 			await Promise.all(codeCaches.map(async codeCacheEntry => {
 				if (codeCacheEntry === currentCodeCacheEntry) {
 					return; // not the current cache folder

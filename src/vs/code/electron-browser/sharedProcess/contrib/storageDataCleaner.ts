@@ -5,7 +5,7 @@
 
 import { INativeEnvironmentService } from 'vs/platform/environment/common/environment';
 import { join } from 'vs/base/common/path';
-import { Promises, readdir, rimraf } from 'vs/base/node/pfs';
+import { Promises, rimraf } from 'vs/base/node/pfs';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { IBackupWorkspacesFormat } from 'vs/platform/backup/node/backup';
@@ -43,7 +43,7 @@ export class StorageDataCleaner extends Disposable {
 			const emptyWorkspaces = workspaces.emptyWorkspaceInfos.map(emptyWorkspace => emptyWorkspace.backupFolder);
 
 			// Read all workspace storage folders that exist
-			const storageFolders = await readdir(this.environmentService.workspaceStorageHome.fsPath);
+			const storageFolders = await Promises.readdir(this.environmentService.workspaceStorageHome.fsPath);
 			await Promise.all(storageFolders.map(async storageFolder => {
 				if (storageFolder.length === StorageDataCleaner.NON_EMPTY_WORKSPACE_ID_LENGTH) {
 					return;

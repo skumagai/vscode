@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { join } from 'vs/base/common/path';
-import { exists, Promises, readdir, rimraf } from 'vs/base/node/pfs';
+import { Promises, rimraf } from 'vs/base/node/pfs';
 import { IStringDictionary } from 'vs/base/common/collections';
 import { IProductService } from 'vs/platform/product/common/productService';
 import { Disposable } from 'vs/base/common/lifecycle';
@@ -66,12 +66,12 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 
 			// Cleanup entries for language packs that aren't installed anymore
 			const cacheDir = join(this.environmentService.userDataPath, 'clp');
-			const cacheDirExists = await exists(cacheDir);
+			const cacheDirExists = await Promises.exists(cacheDir);
 			if (!cacheDirExists) {
 				return;
 			}
 
-			for (let entry of await readdir(cacheDir)) {
+			for (let entry of await Promises.readdir(cacheDir)) {
 				if (installed[entry]) {
 					this.logService.info(`[language pack cache cleanup]: Skipping folder ${entry}. Language pack still in use.`);
 					continue;
@@ -85,7 +85,7 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 			const now = Date.now();
 			for (let packEntry of Object.keys(installed)) {
 				const folder = join(cacheDir, packEntry);
-				for (let entry of await readdir(folder)) {
+				for (let entry of await Promises.readdir(folder)) {
 					if (entry === 'tcf.json') {
 						continue;
 					}
