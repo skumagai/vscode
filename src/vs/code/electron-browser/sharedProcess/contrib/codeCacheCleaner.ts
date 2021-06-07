@@ -18,7 +18,7 @@ export class CodeCacheCleaner extends Disposable {
 		: 1000 * 60 * 60 * 24 * 30 * 3; // roughly 3 months (stable)
 
 	constructor(
-		codeCachePath: string | undefined,
+		currentCodeCachePath: string | undefined,
 		@IProductService private readonly productService: IProductService,
 		@ILogService private readonly logService: ILogService
 	) {
@@ -27,38 +27,38 @@ export class CodeCacheCleaner extends Disposable {
 		// Cached data is stored as user data and we run a cleanup task everytime
 		// the editor starts. The strategy is to delete all files that are older than
 		// 3 months (1 week respectively)
-		if (codeCachePath) {
+		if (currentCodeCachePath) {
 			const scheduler = this._register(new RunOnceScheduler(() => {
-				this.cleanUpCodeCaches(codeCachePath);
+				this.cleanUpCodeCaches(currentCodeCachePath);
 			}, 30 * 1000 /* after 30s */));
 			scheduler.schedule();
 		}
 	}
 
-	private async cleanUpCodeCaches(codeCachePath: string): Promise<void> {
+	private async cleanUpCodeCaches(currentCodeCachePath: string): Promise<void> {
 		this.logService.info('[code cache cleanup]: Starting to clean up old code cache folders.');
 
 		try {
 			const now = Date.now();
 
 			// The folder which contains folders of cached data.
-			// Each of these folder is per version
-			const codeCacheRootPath = dirname(codeCachePath);
-			const codeCacheCurrent = basename(codeCachePath);
+			// Each of these folders is partioned per commit
+			const codeCacheRootPath = dirname(currentCodeCachePath);
+			const currentCodeCacheEntry = basename(currentCodeCachePath);
 
-			const entries = await readdir(codeCacheRootPath);
-			await Promise.all(entries.map(async entry => {
-				if (entry === codeCacheCurrent) {
+			const codeCaches = await readdir(codeCacheRootPath);
+			await Promise.all(codeCaches.map(async codeCacheEntry => {
+				if (codeCacheEntry === currentCodeCacheEntry) {
 					return; // not the current cache folder
 				}
 
 				// Delete cache folder if old enough
-				const path = join(codeCacheRootPath, entry);
-				const stat = await Promises.stat(path);
-				if (stat.isDirectory() && (now - stat.mtime.getTime()) > this._DataMaxAge) {
-					this.logService.info(`[code cache cleanup]: Removing code cache folder ${entry}.`);
+				const codeCacheEntryPath = join(codeCacheRootPath, codeCacheEntry);
+				const codeCacheEntryStat = await Promises.stat(codeCacheEntryPath);
+				if (codeCacheEntryStat.isDirectory() && (now - codeCacheEntryStat.mtime.getTime()) > this._DataMaxAge) {
+					this.logService.info(`[code cache cleanup]: Removing code cache folder ${codeCacheEntry}.`);
 
-					return rimraf(path);
+					return rimraf(codeCacheEntryPath);
 				}
 			}));
 		} catch (error) {

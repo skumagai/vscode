@@ -40,7 +40,7 @@ export class StorageDataCleaner extends Disposable {
 			const contents = await Promises.readFile(this.backupWorkspacesPath, 'utf8');
 
 			const workspaces = JSON.parse(contents) as IBackupWorkspacesFormat;
-			const emptyWorkspaces = workspaces.emptyWorkspaceInfos.map(info => info.backupFolder);
+			const emptyWorkspaces = workspaces.emptyWorkspaceInfos.map(emptyWorkspace => emptyWorkspace.backupFolder);
 
 			// Read all workspace storage folders that exist
 			const storageFolders = await readdir(this.environmentService.workspaceStorageHome.fsPath);

@@ -32,16 +32,16 @@ export class LogsDataCleaner extends Disposable {
 			const currentLog = basename(this.environmentService.logsPath);
 			const logsRoot = dirname(this.environmentService.logsPath);
 
-			const children = await readdir(logsRoot);
+			const logFiles = await readdir(logsRoot);
 
-			const allSessions = children.filter(name => /^\d{8}T\d{6}$/.test(name));
-			const oldSessions = allSessions.sort().filter((d, i) => d !== currentLog);
-			const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 9));
+			const allSessions = logFiles.filter(logFile => /^\d{8}T\d{6}$/.test(logFile));
+			const oldSessions = allSessions.sort().filter(session => session !== currentLog);
+			const sessionsToDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 9));
 
-			if (toDelete.length > 0) {
-				this.logService.info(`[logs cleanup]: Removing log folders '${toDelete.join(', ')}'`);
+			if (sessionsToDelete.length > 0) {
+				this.logService.info(`[logs cleanup]: Removing log folders '${sessionsToDelete.join(', ')}'`);
 
-				await Promises.settled(toDelete.map(name => rimraf(join(logsRoot, name))));
+				await Promises.settled(sessionsToDelete.map(sessionToDelete => rimraf(join(logsRoot, sessionToDelete))));
 			}
 		} catch (error) {
 			onUnexpectedError(error);
